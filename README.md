@@ -82,6 +82,12 @@ personal-rag ask "what was my rationale for the 6% portfolio heat cap?" -k 8
 
 # Without the retrieved passages table
 personal-rag ask "summarize my notes on MLOps" --no-sources
+
+# NEW in v0.7: "what else have I written that's related to this?"
+personal-rag similar ~/notes/kv-cache-eviction.md        # similar notes
+personal-rag similar "attention-is-all-you-need.pdf:12"  # similar chunks
+# Pick top-10 instead of the default 5
+personal-rag similar ~/notes/rag.md --k 10
 ```
 
 ### HTTP

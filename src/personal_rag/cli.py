@@ -176,5 +176,69 @@ def watch_cmd(
         raise typer.Exit(1)
 
 
+@app.command(name="similar")
+def similar_cmd(
+    target: str = typer.Argument(
+        ...,
+        help="Either a chunk id (e.g. 'path/to/note.md:3') or a source path.",
+    ),
+    k: int = typer.Option(5, "--k", min=1, help="How many results to return."),
+    mode: str = typer.Option(
+        "auto",
+        "--mode",
+        help="'chunk', 'source', or 'auto' (chunk if target contains ':', else source).",
+    ),
+) -> None:
+    """Find chunks/notes similar to the given chunk id or source path.
+
+    Two shapes: chunk-level ('what else have I written that's close to this
+    paragraph?') or source-level ('which of my notes is related to this whole
+    note?'). Source mode aggregates per-chunk search results across the
+    whole source and ranks other sources by reciprocal rank.
+    """
+    from personal_rag.similar import similar_to_chunk, similar_to_source
+
+    settings = get_settings()
+
+    if mode == "auto":
+        resolved_mode = "chunk" if ":" in target else "source"
+    else:
+        resolved_mode = mode
+
+    try:
+        if resolved_mode == "chunk":
+            rows = similar_to_chunk(settings, target, k=k)
+            if not rows:
+                console.print(f"[dim]No similar chunks for {target!r}.[/dim]")
+                return
+            table = Table(show_header=True, header_style="bold cyan")
+            table.add_column("source")
+            table.add_column("chunk")
+            table.add_column("preview")
+            for row in rows:
+                preview = row["text"].strip().replace("\n", " ")
+                if len(preview) > 120:
+                    preview = preview[:117] + "..."
+                table.add_row(row["source"], str(row["chunk_index"]), preview)
+            console.print(table)
+        elif resolved_mode == "source":
+            ranked = similar_to_source(settings, target, k=k)
+            if not ranked:
+                console.print(f"[dim]No similar sources for {target!r}.[/dim]")
+                return
+            table = Table(show_header=True, header_style="bold cyan")
+            table.add_column("source")
+            table.add_column("score", justify="right")
+            for src, score in ranked:
+                table.add_row(src, f"{score:.4f}")
+            console.print(table)
+        else:
+            err.print(f"[red]Unknown mode {mode!r}. Use 'chunk', 'source', or 'auto'.[/red]")
+            raise typer.Exit(1)
+    except KeyError as exc:
+        err.print(f"[red]{exc}[/red]")
+        raise typer.Exit(1)
+
+
 if __name__ == "__main__":
     app()

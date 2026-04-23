@@ -91,3 +91,37 @@ class Index:
         self.table.delete(f"source = '{escaped}'")
         after = self.count()
         return before - after
+
+    def get_by_id(self, chunk_id: str) -> dict | None:
+        """Return the full row (including vector) for a chunk id, or None.
+
+        Used by the `similar` flow — we need the chunk's own vector to query
+        against the rest of the index.
+        """
+        df = self.table.to_pandas()
+        rows = df[df["id"] == chunk_id]
+        if rows.empty:
+            return None
+        row = rows.iloc[0]
+        return {
+            "id": row["id"],
+            "source": row["source"],
+            "chunk_index": int(row["chunk_index"]),
+            "text": row["text"],
+            "vector": list(row["vector"]),
+        }
+
+    def get_by_source(self, source: str) -> list[dict]:
+        """All chunks with this source, vectors included, ordered by chunk index."""
+        df = self.table.to_pandas()
+        rows = df[df["source"] == source].sort_values("chunk_index")
+        return [
+            {
+                "id": r["id"],
+                "source": r["source"],
+                "chunk_index": int(r["chunk_index"]),
+                "text": r["text"],
+                "vector": list(r["vector"]),
+            }
+            for _, r in rows.iterrows()
+        ]

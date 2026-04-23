@@ -1,3 +1,3 @@
 """personal-rag — retrieval-augmented QA over your own documents."""
 
-__version__ = "0.5.0"
+__version__ = "0.7.0"
