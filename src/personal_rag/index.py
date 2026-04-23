@@ -83,3 +83,11 @@ class Index:
         return sorted(
             {row["source"] for row in self.table.to_pandas()[["source"]].to_dict("records")}
         )
+
+    def remove_source(self, source: str) -> int:
+        """Remove every chunk coming from `source`. Returns count before delete."""
+        escaped = source.replace(chr(39), chr(39) * 2)
+        before = self.count()
+        self.table.delete(f"source = '{escaped}'")
+        after = self.count()
+        return before - after

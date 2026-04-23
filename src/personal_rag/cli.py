@@ -149,5 +149,32 @@ def serve_cmd(
     uvicorn.run("personal_rag.server:app", host=host, port=port, reload=reload)
 
 
+@app.command(name="watch")
+def watch_cmd(
+    path: Path = typer.Argument(..., exists=True, help="Directory to watch."),
+    debounce_s: float = typer.Option(
+        1.5,
+        "--debounce",
+        help="Seconds of quiet required after the last change before re-ingesting.",
+    ),
+) -> None:
+    """Watch a directory and re-ingest files on any change. Ctrl-C to stop."""
+    from personal_rag.watcher import watch
+
+    settings = get_settings()
+    if not path.is_dir():
+        err.print(f"[red]Not a directory:[/red] {path}")
+        raise typer.Exit(1)
+
+    def _log(msg: str) -> None:
+        console.print(f"[dim]{msg}[/dim]")
+
+    try:
+        watch(path.resolve(), settings, debounce_s=debounce_s, console_log=_log)
+    except ValueError as exc:
+        err.print(f"[red]{exc}[/red]")
+        raise typer.Exit(1)
+
+
 if __name__ == "__main__":
     app()
