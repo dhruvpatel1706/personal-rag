@@ -12,12 +12,16 @@ from personal_rag.config import get_settings
 from personal_rag.generate import generate
 from personal_rag.ingest import IngestError, ingest
 from personal_rag.retrieve import retrieve
+from personal_rag.web import router as ui_router
 
 app = FastAPI(
     title="personal-rag",
     version=__version__,
     description="Local RAG over your documents. Retrieve + generate with Claude.",
 )
+
+# Minimal HTML UI at /ui (v0.6)
+app.include_router(ui_router)
 
 
 class QueryRequest(BaseModel):
