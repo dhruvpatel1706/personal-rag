@@ -48,9 +48,21 @@ def main(
 @app.command(name="ingest")
 def ingest_cmd(
     path: Path = typer.Argument(..., exists=True, help="File or directory to index."),
+    contextual: bool = typer.Option(
+        False,
+        "--contextual/--no-contextual",
+        help=(
+            "Use Anthropic's Contextual Retrieval: prefix each chunk with a 1-2 sentence "
+            "context from a small model (default: claude-haiku-4-5). Significantly improves "
+            "retrieval recall but costs one extra (cached) API call per chunk."
+        ),
+    ),
 ) -> None:
     """Read files at PATH, chunk, embed, and upsert into the index."""
     settings = get_settings()
+    if contextual:
+        settings = settings.model_copy(update={"contextual": True})
+
     with console.status(f"[cyan]Ingesting {path}...", spinner="dots"):
         try:
             result = ingest(path, settings)
@@ -58,10 +70,11 @@ def ingest_cmd(
             err.print(f"[red]Ingest failed:[/red] {exc}")
             raise typer.Exit(1)
 
+    title_suffix = " (contextual)" if result.get("contextual") else ""
     console.print(
         Panel.fit(
             f"Indexed [bold]{result['files_ingested']}[/bold] files "
-            f"into [bold]{result['chunks_total']}[/bold] chunks.",
+            f"into [bold]{result['chunks_total']}[/bold] chunks{title_suffix}.",
             title="Ingest complete",
             border_style="green",
         )
