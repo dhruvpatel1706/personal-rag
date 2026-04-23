@@ -37,6 +37,14 @@ class Settings(BaseSettings):
     chunk_size: int = Field(default=800, description="Target chars per chunk.")
     chunk_overlap: int = Field(default=120, description="Char overlap between chunks.")
     top_k: int = Field(default=5, description="How many chunks to retrieve per query.")
+    hybrid: bool = Field(
+        default=False,
+        description=(
+            "Retrieve with hybrid BM25 + dense search and fuse via RRF. Better recall "
+            "on rare terms + exact-phrase queries at the cost of an extra pass over "
+            "the chunk corpus."
+        ),
+    )
     contextual: bool = Field(
         default=False,
         description=(

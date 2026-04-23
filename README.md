@@ -144,10 +144,23 @@ Enable with `--contextual` on `ingest` or `CONTEXTUAL=true` in `.env`. Set `CONT
 ## Roadmap
 
 - [x] **v0.2 — Contextual Retrieval via Claude Haiku with a cached full-document prefix**
-- [ ] v0.3 — hybrid BM25 + dense retrieval for better recall on rare terms
+- [x] **v0.3 — hybrid BM25 + dense retrieval with Reciprocal Rank Fusion**
 - [ ] v0.4 — per-chunk citations in the answer text (not just a trailing list)
 - [ ] v0.5 — incremental indexing via a watch mode (`personal-rag watch ~/notes`)
 - [ ] v0.6 — simple web UI (FastAPI + HTMX)
+
+### Hybrid retrieval (v0.3)
+
+Dense retrieval is great at paraphrase-y queries but drops the ball on exact-term matches (proper nouns, code identifiers, rare words the embedder wasn't trained on). Hybrid solves that: we run BM25 in parallel, over-fetch from both, then fuse with [Reciprocal Rank Fusion](https://plg.uwaterloo.ca/~gvcormac/cormacksigir09-rrf.pdf) (k=60, straight from the paper — I haven't had to tune it).
+
+Enable via config (`HYBRID=true` in `.env`) or per-call:
+
+```bash
+personal-rag ask "what's the rationale for ndc-scoped lookup?" --hybrid
+personal-rag ask "what did I think of Hardt vs Recht?" --dense   # force dense-only
+```
+
+The over-fetch ratio is 3x the requested top_k; on a typical ~1k-chunk personal vault this adds ~30ms vs pure dense. Bigger corpora would want the tokenized BM25 index cached between calls — a v0.4 candidate.
 
 ## License
 

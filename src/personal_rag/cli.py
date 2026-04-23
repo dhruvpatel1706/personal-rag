@@ -95,9 +95,16 @@ def ask_cmd(
     show_sources: bool = typer.Option(
         True, "--sources/--no-sources", help="Print retrieved passages."
     ),
+    hybrid: bool = typer.Option(
+        None,
+        "--hybrid/--dense",
+        help="Hybrid BM25+dense retrieval (v0.3) vs dense-only. Default: settings.hybrid.",
+    ),
 ) -> None:
     """Ask a question — retrieves relevant chunks and answers with Claude."""
     settings = get_settings()
+    if hybrid is not None:
+        settings = settings.model_copy(update={"hybrid": hybrid})
     with console.status("[cyan]Retrieving...", spinner="dots"):
         passages = retrieve(question, settings, k=k)
 
