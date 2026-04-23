@@ -1,0 +1,44 @@
+"""Configuration via pydantic-settings. Reads from environment and .env."""
+
+from __future__ import annotations
+
+from pathlib import Path
+
+from pydantic import Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class Settings(BaseSettings):
+    """Global settings. Override via env vars or a .env file at project root."""
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
+
+    anthropic_api_key: str = Field(
+        default="",
+        description="Get one at https://console.anthropic.com/settings/keys.",
+    )
+    model: str = Field(
+        default="claude-opus-4-7",
+        description="Claude model for answer generation.",
+    )
+    embedding_model: str = Field(
+        default="BAAI/bge-small-en-v1.5",
+        description="fastembed model name. Small = 384 dim, fast on CPU.",
+    )
+    db_path: Path = Field(
+        default=Path.home() / ".personal-rag" / "lance",
+        description="LanceDB directory. Persists across runs.",
+    )
+    table_name: str = Field(default="documents")
+    chunk_size: int = Field(default=800, description="Target chars per chunk.")
+    chunk_overlap: int = Field(default=120, description="Char overlap between chunks.")
+    top_k: int = Field(default=5, description="How many chunks to retrieve per query.")
+
+
+def get_settings() -> Settings:
+    """Factory — lets tests override via Settings(...) directly."""
+    return Settings()
