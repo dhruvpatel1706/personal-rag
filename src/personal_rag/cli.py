@@ -120,13 +120,21 @@ def ask_cmd(
     if show_sources and passages:
         table = Table(show_header=True, header_style="bold cyan", title="Retrieved passages")
         table.add_column("#", justify="right")
+        table.add_column("cited?", justify="center")
         table.add_column("source")
         table.add_column("chunk", justify="right")
         table.add_column("preview")
+        cited = set(answer.cited_indices)
         for i, p in enumerate(passages, 1):
             preview = p["text"][:100].replace("\n", " ") + ("..." if len(p["text"]) > 100 else "")
-            table.add_row(str(i), p["source"], str(p["chunk_index"]), preview)
+            marker = "[green]✓[/green]" if i in cited else "[dim]·[/dim]"
+            table.add_row(str(i), marker, p["source"], str(p["chunk_index"]), preview)
         console.print(table)
+        if cited and len(cited) < len(passages):
+            console.print(
+                f"[dim]{len(cited)}/{len(passages)} passages were cited inline. "
+                "Uncited passages were retrieved but not used by the model.[/dim]"
+            )
 
 
 @app.command(name="serve")
