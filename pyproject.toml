@@ -1,6 +1,6 @@
 [project]
 name = "personal-rag"
-version = "0.5.0"
+version = "0.6.0"
 description = "Local retrieval-augmented QA over your own notes and PDFs. Fastembed + LanceDB + Claude. Contextual retrieval, hybrid search, inline citations, watch-mode reindex."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -43,6 +43,7 @@ dev = [
     "black>=24.0.0",
     "isort>=5.13.0",
     "flake8>=7.0.0",
+    "httpx>=0.27.0",  # for starlette TestClient
 ]
 
 [project.scripts]
