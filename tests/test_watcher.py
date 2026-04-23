@@ -5,7 +5,6 @@ debouncing + dispatch logic directly."""
 from __future__ import annotations
 
 import time
-from pathlib import Path
 
 from personal_rag.watcher import _DebounceQueue, _PendingEvent
 

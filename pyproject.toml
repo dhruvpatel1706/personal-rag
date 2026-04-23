@@ -1,7 +1,7 @@
 [project]
 name = "personal-rag"
-version = "0.4.0"
-description = "Local retrieval-augmented QA over your own notes and PDFs. Fastembed + LanceDB + Claude. Optional Contextual Retrieval."
+version = "0.5.0"
+description = "Local retrieval-augmented QA over your own notes and PDFs. Fastembed + LanceDB + Claude. Contextual retrieval, hybrid search, inline citations, watch-mode reindex."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
